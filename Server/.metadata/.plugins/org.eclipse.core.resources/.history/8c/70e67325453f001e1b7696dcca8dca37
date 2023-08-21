@@ -1,0 +1,255 @@
+package com.social.socialapp.service.Implementation;
+
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+
+import com.social.socialapp.constant.ExceptionConstant;
+import com.social.socialapp.dto.UserDto;
+import com.social.socialapp.entities.User;
+import com.social.socialapp.exceptions.UserException;
+import com.social.socialapp.repository.UserRepository;
+import com.social.socialapp.security.JwtTokenUtil;
+import com.social.socialapp.service.Interface.DtoUtil;
+import com.social.socialapp.service.Interface.UserService;
+
+import jakarta.transaction.Transactional;
+
+@Service
+public class UserServiceImpl implements UserService{
+	
+
+	@Autowired
+	private UserRepository userRepository;
+
+	@Autowired
+	private PasswordEncoder passwordEncoder;
+
+	@Autowired
+	private JwtTokenUtil jwtTokenUtil;
+	
+	@Autowired
+	private DtoUtil dtoUtil;
+	
+	@Override
+	public User saveRepoUser(User user) throws UserException {
+		return userRepository.save(user);
+	}
+	
+	@Override
+	public User registerUser(User user) throws UserException {
+
+		Optional<User> isEmailExist = userRepository.findByEmail(user.getEmail());
+		
+		if(isEmailExist.isPresent()) {
+			throw new UserException("Email already exist");
+		}
+		
+		Optional<User> isUsernameExist = userRepository.findByUsername(user.getUsername());
+		
+		if(isUsernameExist.isPresent()) {
+			throw new UserException("Username already taken");
+		}
+		
+		if(user.getEmail() == null || user.getPassword() == null || user.getUsername() == null || user.getName() == null) {
+			throw new UserException("All fields are required");
+		}
+		
+		User newUser = new User();
+		
+		newUser.setEmail(user.getEmail());
+		newUser.setName(user.getName());
+		newUser.setUsername(user.getUsername());
+		newUser.setPassword(passwordEncoder.encode(user.getPassword()));
+		
+		
+		return userRepository.save(newUser);
+	}
+
+	@Override
+	public User findUserById(Integer userId) throws UserException {
+		
+		Optional<User> user = userRepository.findById(userId);
+		
+		if(user.isEmpty()) {
+			throw new UserException("User not exist with id: "+ userId);
+		}
+		
+		return user.get();
+	}
+
+	@Override
+	public UserDto findUserDtoById(Integer userId) throws UserException {
+		
+		User user = this.findUserById(userId);
+		
+		return dtoUtil.mapUserToUserDto(user);
+	}
+
+	@Override
+	public User findUserByUsername(String username) throws UserException {
+		
+		Optional<User> user = userRepository.findByUsername(username);
+		
+		if(user.isEmpty()) {
+			throw new UserException("User not exist with username: "+ username);
+		}
+		
+		return user.get();
+	}
+
+	@Override
+	public User findUserProfile(String token) throws UserException {
+		
+		token = token.substring(7);
+		System.out.println(token);
+		
+		String email = jwtTokenUtil.getUsernameFromToken(token);
+		System.out.println("Email: " + email);
+		
+		Optional<User> user = userRepository.findByEmail(email);
+		
+		if(user.isEmpty()) {
+			throw new UserException("Invalid Token");
+		}
+		
+		return user.get();
+	}
+
+	@Override
+//	@Transactional
+	public String followUser(Integer reqUserId, Integer followUserId) throws UserException {
+
+		if(reqUserId == followUserId) {
+			throw new UserException(ExceptionConstant.UNAUTHORIZED_MESSAGE);
+		}
+		
+		User reqUser = this.findUserById(reqUserId);
+		User followUser = this.findUserById(followUserId);
+
+
+		reqUser.getFollowing().add(followUser);
+		
+		followUser.getFollowers().add(reqUser);
+		
+		userRepository.save(reqUser);
+		userRepository.save(followUser);
+		
+		
+		return "You have followed " + followUser.getName();
+	}
+
+	@Override
+	@Transactional
+	public String unFollowUser(Integer reqUserId, Integer followUserId) throws UserException {
+		
+		if(reqUserId == followUserId) {
+			throw new UserException(ExceptionConstant.UNAUTHORIZED_MESSAGE);
+		}
+		
+		User reqUser = this.findUserById(reqUserId);
+		User followUser = this.findUserById(followUserId);
+
+		
+		reqUser.getFollowing().remove(followUser);
+		followUser.getFollowers().remove(reqUser);
+		
+		userRepository.save(reqUser);
+		userRepository.save(followUser);
+		
+		return "You have unfollowed " + followUser.getName();
+	}
+
+	@Override
+	public List<UserDto> findUserByIds(List<Integer> userIds) throws UserException {
+		List<User> users = userRepository.findAllUsersByUserIds(userIds);
+		
+		return dtoUtil.mapUsersToUserDtos(users);
+	}
+
+	@Override
+	public List<UserDto> searchUser(String query) throws UserException {
+		List<User> users = userRepository.findByQuery(query);
+		
+		return dtoUtil.mapUsersToUserDtos(users);
+	}
+
+	@Override
+	public User updateUserDetails(User updatedUser, User existingUser) throws UserException {
+
+		if(updatedUser == null || existingUser == null || updatedUser.getId() != existingUser.getId()) {
+			throw new UserException("You can't update this user");
+		}
+		
+		if(updatedUser.getEmail() != null) {
+			
+			Optional<User> isEmailExist = userRepository.findByEmail(updatedUser.getEmail());
+			
+			if(isEmailExist.isPresent()) {
+				throw new UserException("Email already exist");
+			}
+			
+			existingUser.setEmail(updatedUser.getEmail());
+		}
+		
+		if(updatedUser.getBio() != null) {
+			existingUser.setBio(updatedUser.getBio());
+		}
+		
+		if(updatedUser.getGender() != null) {
+			existingUser.setGender(updatedUser.getGender());
+		}
+		
+		if(updatedUser.getProfileImage() != null) {
+			existingUser.setProfileImage(updatedUser.getProfileImage());
+		}
+		
+		if(updatedUser.getMobile() != null) {
+			Optional<User> isMobileExist = userRepository.findByUsername(updatedUser.getMobile());
+			
+			if(isMobileExist.isPresent()) {
+				throw new UserException("Mobile Number already taken");
+			}
+			
+			existingUser.setMobile(updatedUser.getMobile());
+		}
+		
+		if(updatedUser.getName() != null) {
+			existingUser.setName(updatedUser.getName());
+		}
+		
+		if(updatedUser.getUsername() != null) {
+			Optional<User> isUsernameExist = userRepository.findByUsername(updatedUser.getUsername());
+			
+			if(isUsernameExist.isPresent()) {
+				throw new UserException("Username already taken");
+			}
+			
+			existingUser.setUsername(updatedUser.getUsername());
+		}
+		
+
+		if(updatedUser.getWebsite() != null) {
+			existingUser.setWebsite(updatedUser.getWebsite());
+		}
+		
+
+		return userRepository.save(existingUser);
+	}
+
+	@Override
+	public List<UserDto> suggestionUser(Integer userId) throws UserException {
+
+		List<User> users = userRepository.findSuggestions(userId);
+		
+		
+		
+		return dtoUtil.mapUsersToUserDtos(users);
+	}
+
+
+
+}

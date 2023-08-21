@@ -1,0 +1,74 @@
+package com.social.socialapp.service.Implementation;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
+import com.social.socialapp.dto.CommentDto;
+import com.social.socialapp.dto.PostDto;
+import com.social.socialapp.dto.StoryDto;
+import com.social.socialapp.dto.UserDto;
+import com.social.socialapp.entities.Comment;
+import com.social.socialapp.entities.Post;
+import com.social.socialapp.entities.Story;
+import com.social.socialapp.entities.User;
+import com.social.socialapp.service.Interface.DtoUtil;
+
+public class DtoUtilImpl implements DtoUtil {
+
+	@Override
+	public UserDto mapUserToUserDto(User user) {
+		UserDto userDto = new UserDto();
+		
+		userDto.setName(user.getName());
+		userDto.setEmail(user.getEmail());
+		userDto.setProfileImage(user.getProfileImage());
+		userDto.setUsername(user.getUsername());
+		userDto.setId(user.getId());
+		
+		return userDto;
+	}
+
+	@Override
+	public List<UserDto> mapUsersToUserDtos(List<User> users) {
+		return users.stream()
+                .map((User user) -> this.mapUserToUserDto(user))
+                .collect(Collectors.toList());
+	}
+
+	@Override
+	public StoryDto mapStoryToStoryDto(Story story, UserDto userDto) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public List<StoryDto> mapStoriesToStoryDtos(List<Story> stories, UserDto userDto) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public PostDto mapPostToPostDto(Post post, UserDto userDto) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public List<PostDto> mapPostsToPostDtos(List<Post> posts, UserDto userDto) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public CommentDto mapCommentToCommentDto(Comment comment, UserDto userDto, PostDto postDto) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public List<CommentDto> mapCommentsToCommentDtos(List<Comment> comments, UserDto userDto, PostDto postDto) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+}

@@ -1,0 +1,110 @@
+package com.social.socialapp.security;
+
+import java.io.Serializable;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.stereotype.Component;
+
+import com.social.socialapp.constant.SecurityConstant;
+
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
+
+@Component
+public class JwtTokenUtil implements Serializable {
+
+	private static final long serialVersionUID = -2550185165626007488L;
+
+	
+	// 1. Generate Token
+	
+	public String generateToken(UserDetails userDetails) {
+		
+		Collection<String> authorities = userDetails.getAuthorities()
+									          .stream()
+									          .map(GrantedAuthority::getAuthority)
+									          .collect(Collectors.toList());
+		
+		Map<String,Object> claims = new HashMap<>();
+		
+		claims.put("name", userDetails.getUsername());
+		claims.put("authorities", authorities);
+		
+		System.out.println(userDetails.getUsername());
+		System.out.println("Token expiry: " +  SecurityConstant.JWT_TOKEN_VALIDITY);
+		
+		return doGenerateToken(claims, userDetails.getUsername());
+	}
+
+	@SuppressWarnings("deprecation")
+	private String doGenerateToken(Map<String,Object> claims, String subject) {
+
+		return Jwts.builder()
+				.setIssuer("SocialApp")
+				.setSubject(subject)
+				.setClaims(claims)
+				.setIssuedAt(new Date(System.currentTimeMillis()))
+				.setExpiration(new Date(System.currentTimeMillis() + SecurityConstant.JWT_TOKEN_VALIDITY))
+				.signWith(SecurityConstant.JWT_TOKEN_SIGNATURE_ALGORITHM, SecurityConstant.JWT_KEY.getBytes())
+				.compact();
+	}
+	
+	// 2. Extract data from token
+	// 	a. User name
+	//  b. IssuedAt
+	//  c. Expiration Date
+
+
+	public String getUsernameFromToken(String token) {
+		return getClaimFromToken(token, Claims::getSubject);
+	}
+
+	public Date getIssuedAtDateFromToken(String token) {
+		return getClaimFromToken(token, Claims::getIssuedAt);
+	}
+
+	public Date getExpirationDateFromToken(String token) {
+		return getClaimFromToken(token, Claims::getExpiration);
+	}
+
+	public <T> T getClaimFromToken(String token, Function<Claims, T> claimsResolver) {
+		final Claims claims = getAllClaimsFromToken(token);
+		return claimsResolver.apply(claims);
+	}
+
+	@SuppressWarnings("deprecation")
+	private Claims getAllClaimsFromToken(String token) {
+		return Jwts.parser().setSigningKey(SecurityConstant.JWT_KEY.getBytes()).parseClaimsJws(token).getBody();
+	}
+
+	// 3. Validate Token
+	
+	private Boolean isTokenExpired(String token) {
+		final Date expiration = getExpirationDateFromToken(token);
+		return expiration.before(new Date(System.currentTimeMillis()));
+	}
+
+	public Boolean validateToken(String token, UserDetails userDetails) {
+		final String username = String.valueOf(getUsernameFromToken(token));
+		return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
+	}
+	
+	// 4. Additional JWT Methods
+
+	private Boolean ignoreTokenExpiration(String token) {
+		// here you specify tokens, for that the expiration is ignored
+		return false;
+	}
+
+	public Boolean canTokenBeRefreshed(String token) {
+		return (!isTokenExpired(token) || ignoreTokenExpiration(token));
+	}
+}

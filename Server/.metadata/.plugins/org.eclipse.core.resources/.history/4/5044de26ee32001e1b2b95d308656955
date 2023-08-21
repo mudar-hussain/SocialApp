@@ -1,0 +1,16 @@
+package com.social.socialapp.constant;
+
+import org.springframework.stereotype.Service;
+
+@Service
+public class ExceptionConstant {
+
+	public static final String POST_EXCEPTION_MESSAGE = "Post not available";
+
+	public static final String USER_EXCEPTION_MESSAGE = "User not available";
+	
+	public static final String INVALID_CREDENTIALS_MESSAGE = "Username or password is incorrect";
+	
+	public static final String UNAUTHORIZED_MESSAGE = "Not authorized to perform the action";
+	
+}

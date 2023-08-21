@@ -1,0 +1,121 @@
+package com.social.socialapp.controller;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.social.socialapp.constant.SecurityConstant;
+import com.social.socialapp.dto.UserDto;
+import com.social.socialapp.entities.User;
+import com.social.socialapp.exceptions.UserException;
+import com.social.socialapp.response.MessageResponse;
+import com.social.socialapp.service.Interface.UserService;
+
+@RestController
+//@CrossOrigin(origins = "*", allowedHeaders = "*", exposedHeaders = "*")
+@RequestMapping("/api/users")
+public class UserController {
+
+	@Autowired
+	public UserService userService;
+	
+	
+	@GetMapping("/id/{userId}")
+	private ResponseEntity<User> findUserByIdHandler(@PathVariable Integer userId) throws UserException{
+		User user = userService.findUserById(userId);
+		
+		return new ResponseEntity<User>(user, HttpStatus.OK);
+	}
+	
+	@GetMapping("/username/{username}")
+	private ResponseEntity<User> findUserByUsernameHandler(@PathVariable String username) throws UserException{
+		User user = userService.findUserByUsername(username);
+		
+		return new ResponseEntity<User>(user, HttpStatus.OK);
+	}
+
+
+	@PutMapping("/follow/{followUserId}")
+	private ResponseEntity<MessageResponse> followUserHandler(@PathVariable Integer followUserId,
+			@RequestHeader(SecurityConstant.JWT_TOKEN_HEADER) String token) throws UserException{
+		
+
+		User user = userService.findUserProfile(token);
+		
+		String message = userService.followUser(user.getId(), followUserId);
+		
+		return ResponseEntity.ok(new MessageResponse(message));
+	}
+
+	@PutMapping("/unfollow/{unFollowUserId}")
+	private ResponseEntity<MessageResponse> unFollowUserHandler(@PathVariable Integer unFollowUserId,
+			@RequestHeader(SecurityConstant.JWT_TOKEN_HEADER) String token) throws UserException{
+		
+
+		User user = userService.findUserProfile(token);
+		
+		String message = userService.unFollowUser(user.getId(), unFollowUserId);
+		
+		return ResponseEntity.ok(new MessageResponse(message));
+	}
+
+	@GetMapping("/req")
+	private ResponseEntity<User> findUserProfileHandler
+		(
+			@RequestHeader(SecurityConstant.JWT_TOKEN_HEADER) String token
+		) throws UserException{
+
+
+		User user = userService.findUserProfile(token);
+		System.out.println("In /req, username : " + user.getUsername());
+
+		return ResponseEntity.ok(user);
+	}
+
+	@GetMapping("/ids/{userIds}")
+	private ResponseEntity<List<UserDto>> findUserByUserIdsHandler(@PathVariable List<Integer> userIds) throws UserException{
+		List<UserDto> users = userService.findUserByIds(userIds);
+		
+		return ResponseEntity.ok(users);
+	}
+	
+	//	api/users/search?q="query"
+	@GetMapping("/search")
+	private ResponseEntity<List<UserDto>> searchUserHandler(@RequestParam("q") String query) throws UserException{
+		List<UserDto> users = userService.searchUser(query);
+		
+		return ResponseEntity.ok(users);
+	}
+
+	
+	@PostMapping("/account/edit")
+	private ResponseEntity<User> updateUserHandler(
+			@RequestHeader(SecurityConstant.JWT_TOKEN_HEADER) String token, @RequestBody User user
+				) throws UserException{
+
+		User reqUser = userService.findUserProfile(token);
+		
+		User updatedUser = userService.updateUserDetails(user, reqUser);
+		
+		return ResponseEntity.ok(updatedUser);
+	}
+	
+	
+	@GetMapping("/suggestions/{userId}")
+	private ResponseEntity<List<UserDto>> userSuggestionsHandler(@PathVariable Integer userId) throws UserException{
+		List<UserDto> users = userService.suggestionUser(userId);
+		
+		return ResponseEntity.ok(users);
+	}
+}

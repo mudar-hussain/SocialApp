@@ -1,0 +1,190 @@
+package com.social.socialapp.service.Implementation;
+
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.social.socialapp.constant.ExceptionConstant;
+import com.social.socialapp.dto.UserDto;
+import com.social.socialapp.entities.Post;
+import com.social.socialapp.entities.User;
+import com.social.socialapp.exceptions.PostException;
+import com.social.socialapp.exceptions.UserException;
+import com.social.socialapp.repository.PostRepository;
+import com.social.socialapp.repository.UserRepository;
+import com.social.socialapp.service.Interface.PostService;
+import com.social.socialapp.service.Interface.UserService;
+
+@Service
+public class PostServiceImpl implements PostService {
+	
+	@Autowired
+	private PostRepository postRepository;
+	
+	@Autowired
+	private UserService userService;
+	
+	@Autowired
+	private UserRepository userRepository;
+
+
+
+	@Override
+	public Post createPost(Post post, Integer userId) throws UserException {
+
+		User user = userService.findUserById(userId);
+		
+		UserDto userDto = new UserDto();
+		
+		userDto.setName(user.getName());
+		userDto.setEmail(user.getEmail());
+		userDto.setProfileImage(user.getProfileImage());
+		userDto.setUsername(user.getUsername());
+		userDto.setId(user.getId());
+		
+		post.setUser(userDto);
+		
+		Post createdPost = postRepository.save(post);
+		
+		return createdPost;
+	}
+
+	@Override
+	public String deletePost(Integer postId, Integer userId) throws UserException, PostException {
+		Optional<Post> post = postRepository.findById(postId);
+		
+		if(post.isEmpty()) {
+			throw new PostException();
+		}
+		
+		User user = userService.findUserById(userId);
+		
+		if(!post.get().getUser().getId().equals(user.getId())) {
+			throw new PostException(ExceptionConstant.UNAUTHORIZED_MESSAGE);
+		}
+		
+		postRepository.deleteById(post.get().getId());
+		
+		return "Post deleted successfully";
+	}
+
+	@Override
+	public Post findPostById(Integer postId) throws PostException {
+
+		Optional<Post> post = postRepository.findById(postId);
+		if(post.isEmpty()) {
+			throw new PostException();
+		}
+		
+		return post.get();
+	}
+
+	@Override
+	public List<Post> findPostByUserId(Integer userId) throws UserException {
+		
+		List<Post> posts = postRepository.findByUserId(userId);
+		
+		return posts;
+	}
+
+	@Override
+	public List<Post> findAllPostByUserIds(List<Integer> userIds) throws UserException, PostException {
+
+		List<Post> posts = postRepository.findAllPostByUserIds(userIds);
+		
+		return posts;
+	}
+
+	@Override
+	public String savePost(Integer postId, Integer userId) throws UserException, PostException {
+		Optional<Post> post = postRepository.findById(postId);
+		
+		if(post.isEmpty()) {
+			throw new PostException();
+		}
+		
+		User user = userService.findUserById(userId);
+		
+		if(!user.getSavedPosts().contains(post.get())) {
+			user.getSavedPosts().add(post.get());
+			userRepository.save(user);
+		}
+		
+		return "Post saved successfully";
+	}
+
+	@Override
+	public String unsavePost(Integer postId, Integer userId) throws UserException, PostException {
+		Optional<Post> post = postRepository.findById(postId);
+		
+		if(post.isEmpty()) {
+			throw new PostException();
+		}
+		
+		User user = userService.findUserById(userId);
+		
+		if(user.getSavedPosts().contains(post.get())) {
+			user.getSavedPosts().remove(post.get());
+			userRepository.save(user);
+		}
+		
+		return "Post unsaved successfully";
+	}
+
+	@Override
+	public Post likePost(Integer postId, Integer userId) throws UserException, PostException {
+		Optional<Post> post = postRepository.findById(postId);
+		
+		if(post.isEmpty()) {
+			throw new PostException();
+		}
+		
+		User user = userService.findUserById(userId);
+		
+		if(post.get().getLikedByUsers().contains(user.getId())) {
+			return post.get();
+		}
+			UserDto userDto = new UserDto();
+			
+			userDto.setName(user.getName());
+			userDto.setEmail(user.getEmail());
+			userDto.setProfileImage(user.getProfileImage());
+			userDto.setUsername(user.getUsername());
+			userDto.setId(user.getId());
+			
+			post.get().getLikedByUsers().add(userDto);
+			
+			return postRepository.save(post.get());
+			
+	}
+
+	@Override
+	public Post unlikePost(Integer postId, Integer userId) throws UserException, PostException {
+		
+		Optional<Post> post = postRepository.findById(postId);
+		
+		if(post.isEmpty()) {
+			throw new PostException();
+		}
+		
+		User user = userService.findUserById(userId);
+		
+		if(!post.get().getLikedByUsers().contains(user.getId())) {
+			return post.get();
+		}
+			UserDto userDto = new UserDto();
+			
+			userDto.setName(user.getName());
+			userDto.setEmail(user.getEmail());
+			userDto.setProfileImage(user.getProfileImage());
+			userDto.setUsername(user.getUsername());
+			userDto.setId(user.getId());
+			
+			post.get().getLikedByUsers().add(userDto);
+			
+			return postRepository.save(post.get());
+	}
+
+}

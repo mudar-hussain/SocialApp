@@ -1,0 +1,221 @@
+package com.social.socialapp.service.Implementation;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.social.socialapp.constant.ExceptionConstant;
+import com.social.socialapp.dto.PostDto;
+import com.social.socialapp.dto.UserDto;
+import com.social.socialapp.entities.Post;
+import com.social.socialapp.entities.Story;
+import com.social.socialapp.entities.User;
+import com.social.socialapp.exceptions.PostException;
+import com.social.socialapp.exceptions.UserException;
+import com.social.socialapp.repository.PostRepository;
+import com.social.socialapp.service.Interface.CommentService;
+import com.social.socialapp.service.Interface.PostService;
+import com.social.socialapp.service.Interface.UserService;
+
+@Service
+public class PostServiceImpl implements PostService {
+	
+	@Autowired
+	private PostRepository postRepository;
+	
+	@Autowired
+	private UserService userService;
+	
+	@Autowired
+	private CommentService commentService;
+	
+
+	@Override
+	public PostDto mapPostToPostDto(Post post, UserDto userDto) {
+		
+		PostDto postDto = new PostDto();
+		postDto.setId(post.getId());
+		postDto.setCaption(post.getCaption());
+		postDto.setCreatedAt(post.getCreatedAt());
+		postDto.setLocation(post.getLocation());
+		postDto.setPostImage(post.getPostImage());
+		
+		if(userDto == null) {
+			postDto.setUser(userService.mapUserToUserDto(post.getUser()));
+		}else {
+			postDto.setUser(userDto);
+		}
+		
+		if(post.getLikedByUsers().size() > 0) {
+			postDto.setLikedByUsers(
+					userService.mapUsersToUserDtos(post.getLikedByUsers().stream().collect(Collectors.toList())));
+		}
+		
+		if(post.getComments().size() > 0) {
+			postDto.setComments(
+					commentService.mapCommentsToCommentDtos(post.getComments().stream().collect(Collectors.toList()), userDto, postDto));
+		}
+		
+		return postDto;
+	}
+
+	@Override
+	public List<PostDto> mapPostsToPostDtos(List<Post> posts, UserDto userDto) {
+		return posts.stream()
+	                .map((Post post) -> mapPostToPostDto(post, userDto))
+	                .collect(Collectors.toList());
+		
+		
+	}
+
+	@Override
+	public Post saveRepoPost(Post post) throws PostException {
+		
+		return postRepository.save(post);
+	}
+
+
+	@Override
+	public PostDto createPost(Post post, Integer userId) throws UserException {
+
+		User user = userService.findUserById(userId);
+		
+		post.setUser(user);
+		postRepository.save(post);
+		
+		// Create PostDto for Response
+		
+		UserDto userDto = userService.mapUserToUserDto(user);
+		PostDto createdPost = this.mapPostToPostDto(post, userDto); 
+		
+		return createdPost;
+	}
+
+	@Override
+	public PostDto findPostById(Integer postId) throws PostException {
+
+		Optional<Post> post = postRepository.findById(postId);
+		if(post.isEmpty()) {
+			throw new PostException();
+		}
+		
+		return this.mapPostToPostDto(post.get(), userService.mapUserToUserDto(post.get().getUser()));
+	}
+	
+	@Override
+	public String deletePost(Integer postId, Integer userId) throws UserException, PostException {
+
+		Optional<Post> post = postRepository.findById(postId);
+		if(post.isEmpty()) {
+			throw new PostException();
+		}
+		
+		User user = userService.findUserById(userId);
+		
+		if(!post.get().getUser().getId().equals(user.getId())) {
+			throw new PostException(ExceptionConstant.UNAUTHORIZED_MESSAGE);
+		}
+		
+		postRepository.deleteById(post.get().getId());
+		
+		return "Post deleted successfully";
+	}
+
+
+	@Override
+	public List<PostDto> findPostByUserId(Integer userId) throws UserException {
+		
+		User user = userService.findUserById(userId);
+		
+		List<Post> posts = postRepository.findByUserId(user.getId());
+		
+		return this.mapPostsToPostDtos(posts, userService.mapUserToUserDto(user));
+	}
+
+	@Override
+	public List<PostDto> findAllPostByUserIds(List<Integer> userIds) throws UserException, PostException {
+
+		List<Post> posts = postRepository.findAllPostByUserIds(userIds);
+		
+		return this.mapPostsToPostDtos(posts, null);
+	}
+
+	@Override
+	public String savePost(Integer postId, Integer userId) throws UserException, PostException {
+		
+		Optional<Post> post = postRepository.findById(postId);
+		if(post.isEmpty()) {
+			throw new PostException();
+		}
+		
+		User user = userService.findUserById(userId);
+		
+		if(!user.getSavedPosts().contains(post.get())) {
+			user.getSavedPosts().add(post.get());
+			userService.saveRepoUser(user);
+		}
+		
+		return "Post saved successfully";
+	}
+
+	@Override
+	public String unsavePost(Integer postId, Integer userId) throws UserException, PostException {
+
+		Optional<Post> post = postRepository.findById(postId);
+		if(post.isEmpty()) {
+			throw new PostException();
+		}
+		
+		User user = userService.findUserById(userId);
+		
+		if(user.getSavedPosts().contains(post.get())) {
+			user.getSavedPosts().remove(post.get());
+			userService.saveRepoUser(user);
+		}
+		
+		return "Post unsaved successfully";
+	}
+
+	@Override
+	public PostDto likePost(Integer postId, Integer userId) throws UserException, PostException {
+
+		Optional<Post> post = postRepository.findById(postId);
+		if(post.isEmpty()) {
+			throw new PostException();
+		}
+		
+		User user = userService.findUserById(userId);
+		
+		post.get().getLikedByUsers().add(user);
+		Post updatedpost = postRepository.save(post.get());
+		
+		
+
+		return this.mapPostToPostDto(updatedpost, null);
+			
+	}
+
+	@Override
+	public PostDto unlikePost(Integer postId, Integer userId) throws UserException, PostException {
+		
+		Optional<Post> post = postRepository.findById(postId);
+		if(post.isEmpty()) {
+			throw new PostException();
+		}
+		
+		User user = userService.findUserById(userId);
+		
+		post.get().getLikedByUsers().remove(user);
+		Post updatedpost = postRepository.save(post.get());
+		
+		return this.mapPostToPostDto(updatedpost, null);
+	}
+
+
+
+
+
+}

@@ -1,0 +1,24 @@
+package com.social.socialapp.service.Implementation;
+
+import java.util.List;
+
+import com.social.socialapp.entities.Story;
+import com.social.socialapp.exceptions.StoryException;
+import com.social.socialapp.exceptions.UserException;
+import com.social.socialapp.service.Interface.StoryService;
+
+public class StoryServiceImpl implements StoryService {
+
+	@Override
+	public Story createStory(Story story, Integer userId) throws UserException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public List<Story> findStoryByUserId(Integer userId) throws UserException, StoryException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+}

@@ -1,0 +1,114 @@
+package com.social.socialapp.service.Implementation;
+
+import java.time.LocalDateTime;
+import java.util.Optional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.social.socialapp.dto.UserDto;
+import com.social.socialapp.entities.Comment;
+import com.social.socialapp.entities.Post;
+import com.social.socialapp.entities.User;
+import com.social.socialapp.exceptions.CommentException;
+import com.social.socialapp.exceptions.PostException;
+import com.social.socialapp.exceptions.UserException;
+import com.social.socialapp.repository.CommentRepository;
+import com.social.socialapp.repository.PostRepository;
+import com.social.socialapp.repository.UserRepository;
+import com.social.socialapp.service.Interface.CommentService;
+import com.social.socialapp.service.Interface.PostService;
+import com.social.socialapp.service.Interface.UserService;
+
+@Service
+public class CommentServiceImpl implements CommentService {
+	
+	@Autowired
+	private CommentRepository commentRepository;
+	
+	@Autowired
+	private UserService userService;
+	
+	@Autowired
+	private PostService postService;
+	
+	@Autowired
+	private PostRepository postRepository;
+
+	@Override
+	public Comment createComment(Integer userId, Integer postId, Comment comment) throws UserException, PostException {
+		
+		User user = userService.findUserById(userId);
+		Post post = postService.findPostById(postId);
+
+		UserDto userDto = new UserDto();
+		 
+		userDto.setName(user.getName());
+		userDto.setEmail(user.getEmail());
+		userDto.setProfileImage(user.getProfileImage());
+		userDto.setUsername(user.getUsername());
+		userDto.setId(user.getId());
+		
+		comment.setUser(userDto);
+		comment.setCreatedAt(LocalDateTime.now());
+		
+		Comment createdComment = commentRepository.save(comment);
+		
+		post.getComments().add(createdComment);
+		
+		postRepository.save(post);
+		
+		return createdComment;
+	}
+
+	@Override
+	private Comment findCommentById(Integer commentId) throws CommentException {
+		Optional<Comment> comment = commentRepository.findById(commentId);
+		
+		if(comment.isEmpty()) {
+			throw new CommentException();
+		}
+		
+		return comment.get();
+	}
+
+	@Override
+	public Comment likeComment(Integer userId, Integer commentId) throws UserException, CommentException {
+
+		User user = userService.findUserById(userId);
+		Comment comment = findCommentById(commentId);
+
+		UserDto userDto = new UserDto();
+		 
+		userDto.setName(user.getName());
+		userDto.setEmail(user.getEmail());
+		userDto.setProfileImage(user.getProfileImage());
+		userDto.setUsername(user.getUsername());
+		userDto.setId(user.getId()); 
+		
+		comment.getLikedByUsers().add(userDto);
+		
+		return commentRepository.save(comment);
+		
+	}
+
+	@Override
+	public Comment unlikeComment(Integer userId, Integer commentId) throws UserException, CommentException {
+
+		User user = userService.findUserById(userId);
+		Comment comment = findCommentById(commentId);
+
+		UserDto userDto = new UserDto();
+		 
+		userDto.setName(user.getName());
+		userDto.setEmail(user.getEmail());
+		userDto.setProfileImage(user.getProfileImage());
+		userDto.setUsername(user.getUsername());
+		userDto.setId(user.getId()); 
+		
+		comment.getLikedByUsers().remove(userDto);
+		
+		return commentRepository.save(comment);
+	}
+
+}

@@ -1,0 +1,5 @@
+package com.social.socialapp.dto;
+
+public class CommentDto {
+
+}

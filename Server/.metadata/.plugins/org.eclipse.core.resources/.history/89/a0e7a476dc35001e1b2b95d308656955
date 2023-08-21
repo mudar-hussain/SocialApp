@@ -1,0 +1,53 @@
+package com.social.socialapp.controller;
+
+import java.util.Optional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.social.socialapp.constant.ExceptionConstant;
+import com.social.socialapp.entities.User;
+import com.social.socialapp.exceptions.UserException;
+import com.social.socialapp.repository.UserRepository;
+import com.social.socialapp.service.Interface.UserService;
+
+@RestController
+@RequestMapping("/api")
+@CrossOrigin(origins = "*")
+public class AuthController {
+
+	@Autowired
+	private UserService userService;
+	
+	@Autowired
+	private UserRepository userRepository;
+	
+	@PostMapping("/signup")
+	public ResponseEntity<User> registerUserHandler(@RequestBody User user) throws UserException{
+		User registeredUser = userService.registerUser(user);
+		
+		return new ResponseEntity<User>(registeredUser, HttpStatus.OK);
+	}
+	 
+	@GetMapping("/signin")
+	public ResponseEntity<User> signinHandler(Authentication auth) throws BadCredentialsException{
+		
+		Optional<User> user = userRepository.findByEmail(auth.getName());
+		
+		if(user.isPresent()) {
+			return new ResponseEntity<User>(user.get(), HttpStatus.ACCEPTED);
+		}
+		
+		throw new BadCredentialsException(ExceptionConstant.INVALID_CREDENTIALS_MESSAGE);
+	}
+	
+}

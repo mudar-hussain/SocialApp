@@ -1,0 +1,34 @@
+package com.social.socialapp.service.Interface;
+
+import java.util.List;
+
+import com.social.socialapp.dto.CommentDto;
+import com.social.socialapp.dto.PostDto;
+import com.social.socialapp.dto.UserDto;
+import com.social.socialapp.entities.Comment;
+import com.social.socialapp.entities.Post;
+import com.social.socialapp.exceptions.CommentException;
+import com.social.socialapp.exceptions.PostException;
+import com.social.socialapp.exceptions.UserException;
+
+public interface CommentService {
+
+	
+	public Comment saveRepoComment(Comment comment) throws CommentException;
+
+	public CommentDto mapCommentToCommentDto(Comment comment, UserDto userDto, PostDto postDto);
+	
+	public List<CommentDto> mapCommentsToCommentDtos(List<Comment> comments, UserDto userDto, PostDto postDto);
+	
+	public CommentDto createComment(Integer userId, Integer postId, Comment comment) throws UserException, PostException;
+	
+	public Comment findCommentById(Integer commentId) throws CommentException;
+	
+	public CommentDto findCommentDtoById(Integer commentId) throws CommentException;
+
+	public CommentDto likeComment(Integer userId, Integer commentId) throws UserException, CommentException;
+
+	public CommentDto unlikeComment(Integer userId, Integer commentId) throws UserException, CommentException;
+	
+	
+}

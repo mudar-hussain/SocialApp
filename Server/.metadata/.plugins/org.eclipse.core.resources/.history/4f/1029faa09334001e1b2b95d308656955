@@ -1,0 +1,5 @@
+package com.social.socialapp.service.Interface;
+
+public interface DtoUtil {
+
+}

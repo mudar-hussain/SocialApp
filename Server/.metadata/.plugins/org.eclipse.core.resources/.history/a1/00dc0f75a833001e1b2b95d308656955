@@ -1,0 +1,27 @@
+package com.social.socialapp.constant;
+
+import java.util.concurrent.TimeUnit;
+
+import javax.crypto.SecretKey;
+
+import org.springframework.stereotype.Service;
+
+import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.io.Encoders;
+import io.jsonwebtoken.security.Keys;
+
+@Service
+public class SecurityConstant {
+
+	
+	public static final SignatureAlgorithm JWT_TOKEN_SIGNATURE_ALGORITHM = SignatureAlgorithm.HS512;
+	
+	private static final SecretKey key = Keys.secretKeyFor(JWT_TOKEN_SIGNATURE_ALGORITHM);
+	
+	public static final String JWT_KEY = Encoders.BASE64.encode(key.getEncoded());
+	
+	public static final long JWT_TOKEN_VALIDITY = TimeUnit.MINUTES.toMillis(150);
+	
+	public static final String JWT_TOKEN_HEADER = "Authorization";
+
+}

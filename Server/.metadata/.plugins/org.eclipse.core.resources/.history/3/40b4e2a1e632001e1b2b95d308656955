@@ -1,0 +1,31 @@
+package com.social.socialapp.service;
+
+import java.util.List;
+
+import com.social.socialapp.entities.Post;
+import com.social.socialapp.exceptions.PostException;
+import com.social.socialapp.exceptions.UserException;
+
+public interface PostService {
+
+	public Post createPost(Post post, Integer userId) throws UserException;
+	
+	public String deletePost(Integer postId, Integer userId) throws UserException, PostException;
+	
+	public Post findPostByPostId(Integer postId) throws PostException;
+	
+	public List<Post> findPostByUserId(Integer userId) throws UserException;
+	
+	public List<Post> findAllPostByUserIds(List<Integer> userIds) throws UserException, PostException;
+	
+	public String savedPost(Integer postId, Integer userId) throws UserException, PostException;
+	
+	public String unSavedPost(Integer postId, Integer userId) throws UserException, PostException;
+	
+	public Post likePost(Integer postId, Integer userId) throws UserException, PostException;
+	
+	public Post unlikePost(Integer postId, Integer userId) throws UserException, PostException;
+	
+	
+	
+}

@@ -1,0 +1,87 @@
+package com.social.socialapp.entities.Deprecated;
+
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import com.social.socialapp.dto.UserDto;
+
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+@Deprecated
+//@Entity
+@Table(name = "Posts")
+@AllArgsConstructor
+@NoArgsConstructor
+@Setter
+@Getter
+public class Post {
+
+	@Id
+	@GeneratedValue(strategy = GenerationType.AUTO)
+	private Integer id;
+	
+	private String caption;
+	private String postImage;
+	private String location;
+	private LocalDateTime createdAt;
+	
+
+//	@Embedded
+//	@AttributeOverrides(value = { 
+//			@AttributeOverride(name="id", column=@Column(name="user_id")), 
+//			@AttributeOverride(name="email", column=@Column(name="user_email"))
+//	})
+//	private UserDto user;
+	
+	@ManyToOne
+	@JoinColumn(name="user_id")
+	private UserDto user;
+	
+	
+//	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+//	@JoinTable(name="comments", joinColumns=@JoinColumn(name="comment_id"))
+//	private List<Comment> comments = new ArrayList<>();
+	
+	@OneToMany(mappedBy="post", cascade = CascadeType.ALL)
+	private List<Comment> comments = new ArrayList<>();
+	
+	
+//	@Embedded
+//	@ElementCollection
+//	@JoinTable(name="likedByUsers", joinColumns=@JoinColumn(name="user_id"))
+//	private Set<UserDto> likedByUsers = new HashSet<>();
+	
+	@ManyToMany
+	@JoinTable(name="post_likes",
+			joinColumns = @JoinColumn(name = "post_id"),
+			inverseJoinColumns = @JoinColumn(name = "user_id"))
+	private Set<UserDto> likedByUsers = new HashSet<>();
+	
+	
+	@Override
+	public boolean equals(Object obj) {
+		return !super.equals(obj);
+	}
+	
+	@Override
+	public int hashCode() {
+        return getId().hashCode();
+    }
+	
+}
