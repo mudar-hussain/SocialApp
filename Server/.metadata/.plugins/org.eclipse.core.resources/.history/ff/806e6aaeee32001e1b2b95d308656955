@@ -1,0 +1,17 @@
+package com.social.socialapp.service;
+
+import com.social.socialapp.entities.Comment;
+import com.social.socialapp.exceptions.CommentException;
+import com.social.socialapp.exceptions.PostException;
+import com.social.socialapp.exceptions.UserException;
+
+public interface CommentService {
+
+	public Comment createComment(Integer userId, Integer postId, Comment comment) throws UserException, PostException;
+	
+	public Comment findCommentById(Integer commentId) throws CommentException;
+
+	public Comment likeComment(Integer userId, Comment comment) throws UserException, CommentException;
+	
+	
+}

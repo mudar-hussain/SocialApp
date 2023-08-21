@@ -1,0 +1,22 @@
+FrontEnd = 
+A] Libraries: 
+
+1. tailwind css
+2. Chakra UI
+
+3. formik
+4. yup
+5. react-icons
+6. react-redux
+7. redux-thunk
+8. redux
+9. react-router-dom
+
+
+B] Development components: 
+
+1. Sidebar
+2. Profile Page = user details, reqUser post part, reqUser post card
+3. Home Page = Story Circle, post card, comment model, home right, create post model
+4. Story = Story view, progress bar
+

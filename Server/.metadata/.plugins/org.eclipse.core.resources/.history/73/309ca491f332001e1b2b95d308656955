@@ -1,0 +1,5 @@
+package com.social.socialapp.controller;
+
+public class CommentController {
+
+}

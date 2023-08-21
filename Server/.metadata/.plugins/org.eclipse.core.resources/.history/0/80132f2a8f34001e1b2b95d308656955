@@ -1,0 +1,27 @@
+package com.social.socialapp.service.Interface;
+
+import java.util.List;
+
+import com.social.socialapp.dto.StoryDto;
+import com.social.socialapp.dto.UserDto;
+import com.social.socialapp.entities.Story;
+import com.social.socialapp.exceptions.StoryException;
+import com.social.socialapp.exceptions.UserException;
+
+public interface StoryService {
+
+	public Story saveRepoStory(Story story) throws StoryException;
+	
+	public StoryDto createStory(Story story, Integer userId) throws UserException;
+	
+	public StoryDto findStoryById(Integer storyId) throws StoryException;
+	
+	public String deleteStory(Integer storyId, Integer userId) throws UserException, StoryException;
+	
+	public List<StoryDto> findStoryByUserId(Integer userId) throws UserException, StoryException;
+
+	public StoryDto mapStoryToStoryDto(Story story, UserDto userDto);
+	
+	public List<StoryDto> mapStoriesToStoryDtos(List<Story> stories, UserDto userDto);
+	
+}

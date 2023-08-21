@@ -1,0 +1,14 @@
+package com.social.socialapp.service.Interface;
+
+import java.util.List;
+
+import com.social.socialapp.entities.Story;
+import com.social.socialapp.exceptions.StoryException;
+import com.social.socialapp.exceptions.UserException;
+
+public interface StoryService {
+
+	public Story createStory(Story story, Integer userId) throws UserException;
+	
+	public List<Story> findStoryByUserId(Integer userId) throws UserException, StoryException;
+}

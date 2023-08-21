@@ -1,0 +1,5 @@
+package com.social.socialapp.exceptions;
+
+public class StoryException {
+
+}

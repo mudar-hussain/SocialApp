@@ -1,0 +1,46 @@
+package com.social.socialapp.service;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.stereotype.Service;
+
+import com.social.socialapp.entities.Role;
+import com.social.socialapp.repository.UserRepository;
+
+@Service
+public class JwtUserDetailsService implements UserDetailsService {
+
+	@Autowired
+	private UserRepository userRepository;
+
+	@Override
+	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+
+		Optional<com.social.socialapp.entities.User> optUser = userRepository.findByEmail(username);
+		
+		if(optUser.isEmpty()) {
+			throw new BadCredentialsException("User not found with username: " + username);
+		}
+		
+		com.social.socialapp.entities.User user = optUser.get();
+		
+		
+		List<GrantedAuthority> authorities = new ArrayList<>();
+		authorities.add(new SimpleGrantedAuthority("Role_User"));
+		
+			
+		return new org.springframework.security.core.userdetails.User(user.getEmail(), user.getPassword(), authorities);
+		
+	}
+
+}

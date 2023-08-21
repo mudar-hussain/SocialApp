@@ -1,0 +1,141 @@
+package com.social.socialapp.service.Implementation;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.social.socialapp.dto.CommentDto;
+import com.social.socialapp.dto.PostDto;
+import com.social.socialapp.dto.UserDto;
+import com.social.socialapp.entities.Comment;
+import com.social.socialapp.entities.Post;
+import com.social.socialapp.entities.User;
+import com.social.socialapp.exceptions.CommentException;
+import com.social.socialapp.exceptions.PostException;
+import com.social.socialapp.exceptions.UserException;
+import com.social.socialapp.repository.CommentRepository;
+import com.social.socialapp.service.Interface.CommentService;
+import com.social.socialapp.service.Interface.PostService;
+import com.social.socialapp.service.Interface.UserService;
+
+@Service
+public class CommentServiceImpl implements CommentService {
+	
+	@Autowired
+	private CommentRepository commentRepository;
+	
+	@Autowired
+	private UserService userService;
+	
+	@Autowired
+	private PostService postService;
+	
+	
+	@Override
+	public CommentDto mapCommentToCommentDto(Comment comment, UserDto userDto, PostDto postDto) {
+		
+		CommentDto commentDto = new CommentDto();
+		
+		commentDto.setId(comment.getId());
+		commentDto.setContent(comment.getContent());
+		commentDto.setCreatedAt(comment.getCreatedAt());
+		
+		if(postDto == null) {
+			commentDto.setPost(postService.mapPostToPostDto(comment.getPost(), null));
+		}else {
+			commentDto.setPost(postDto);
+		}
+		
+		if(userDto == null) {
+			commentDto.setUser(userService.mapUserToUserDto(comment.getUser()));
+		}else {
+			commentDto.setUser(userDto);
+		}
+		
+		commentDto.setLikedByUsers(userService.mapUsersToUserDtos(comment.getLikedByUsers().stream().collect(Collectors.toList())));
+		
+		return commentDto;
+	}
+
+	@Override
+	public List<CommentDto> mapCommentsToCommentDtos(List<Comment> comments, UserDto userDto, PostDto postDto) {
+		return comments.stream()
+                .map((Comment comment) -> mapCommentToCommentDto(comment, userDto, postDto))
+                .collect(Collectors.toList());
+	}
+	
+
+
+	@Override
+	public Comment saveRepoComment(Comment comment) throws CommentException {
+		
+		return commentRepository.save(comment);
+	}
+
+	@Override
+	public CommentDto createComment(Integer userId, Integer postId, Comment comment) throws UserException, PostException {
+		
+		User user = userService.findUserById(userId);
+		Post post = postService.findPostById(postId);
+
+		
+		comment.setUser(user);
+		comment.setCreatedAt(LocalDateTime.now());
+		
+		Comment createdComment = commentRepository.save(comment);
+		
+		post.getComments().add(createdComment);
+		
+		postService.saveRepoPost(post);
+//		postRepository.save(post);
+		
+		return createdComment;
+	}
+
+	@Override
+	public Comment findCommentById(Integer commentId) throws CommentException {
+		Optional<Comment> comment = commentRepository.findById(commentId);
+		
+		if(comment.isEmpty()) {
+			throw new CommentException();
+		}
+		
+		return comment.get();
+	}
+
+	@Override
+	public Comment likeComment(Integer userId, Integer commentId) throws UserException, CommentException {
+
+		User user = userService.findUserById(userId);
+		
+		Comment comment = this.findCommentById(commentId);
+
+		UserDto userDto = this.getUserDto(user);
+		
+		comment.getLikedByUsers().add(userDto);
+		
+		return commentRepository.save(comment);
+		
+	}
+
+	@Override
+	public Comment unlikeComment(Integer userId, Integer commentId) throws UserException, CommentException {
+
+		User user = userService.findUserById(userId);
+		
+		Comment comment = this.findCommentById(commentId);
+
+		UserDto userDto = this.getUserDto(user);
+		
+		comment.getLikedByUsers().remove(userDto);
+		
+		return commentRepository.save(comment);
+	}
+
+
+
+}

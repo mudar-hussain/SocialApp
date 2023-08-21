@@ -1,0 +1,54 @@
+package com.social.socialapp.filter;
+
+import java.io.IOException;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.web.filter.OncePerRequestFilter;
+
+import com.social.socialapp.constant.SecurityConstant;
+import com.social.socialapp.security.JwtTokenUtil;
+
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
+public class JWTTokenGeneratorFilter extends OncePerRequestFilter {
+	
+	@Autowired
+	private JwtTokenUtil jwtTokenUtil;
+
+	@Override
+	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+			throws ServletException, IOException {
+
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		System.out.println("Authentication: "+authentication);
+
+		if (authentication != null) {
+			
+			System.out.println("In JWTTokenGeneratorFilter");
+
+			UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+			
+			System.out.println("Generated username: " + authentication.getName());
+			
+			String jwtToken = jwtTokenUtil.generateToken(userDetails);
+
+			System.out.println("Generated token: " + jwtToken);
+			
+			response.setHeader(SecurityConstant.JWT_TOKEN_HEADER, jwtToken);
+		}
+		filterChain.doFilter(request, response);
+
+	}
+
+	@Bean
+	protected boolean shouldNotFilter(HttpServletRequest req) throws ServletException {
+		return !req.getServletPath().equals("/signin");
+	}
+}

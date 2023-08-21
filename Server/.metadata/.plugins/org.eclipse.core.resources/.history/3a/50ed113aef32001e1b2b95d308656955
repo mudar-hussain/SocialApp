@@ -1,0 +1,34 @@
+package com.social.socialapp.service;
+
+import com.social.socialapp.entities.Comment;
+import com.social.socialapp.exceptions.CommentException;
+import com.social.socialapp.exceptions.PostException;
+import com.social.socialapp.exceptions.UserException;
+
+public class CommentServiceImpl implements CommentService {
+
+	@Override
+	public Comment createComment(Integer userId, Integer postId, Comment comment) throws UserException, PostException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Comment findCommentById(Integer commentId) throws CommentException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Comment likeComment(Integer userId, Comment comment) throws UserException, CommentException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Comment unlikeComment(Integer userId, Comment comment) throws UserException, CommentException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+}

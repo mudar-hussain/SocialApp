@@ -1,0 +1,29 @@
+package com.social.socialapp.security;
+
+import javax.crypto.SecretKey;
+
+import org.springframework.stereotype.Service;
+
+import com.social.socialapp.constant.SecurityConstant;
+
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.security.Keys;
+
+@Service
+public class JwtTokenProvider {
+
+	@SuppressWarnings("deprecation")
+	public JwtTokenClaims getClaimsFromToken(String token) {
+		
+		SecretKey key = Keys.hmacShaKeyFor(SecurityConstant.JWT_KEY.getBytes());
+		
+		Claims claims = Jwts.parser().setSigningKey(key).parseClaimsJwt(token).getBody();
+		
+		String username = String.valueOf(claims.get("username"));
+		
+		JwtTokenClaims jwtTokenClaims = new JwtTokenClaims(username);
+		
+		return jwtTokenClaims;
+	}
+}

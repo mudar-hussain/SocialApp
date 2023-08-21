@@ -1,0 +1,147 @@
+package com.social.socialapp.controller;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.social.socialapp.constant.SecurityConstant;
+import com.social.socialapp.dto.CommentDto;
+import com.social.socialapp.dto.StoryDto;
+import com.social.socialapp.entities.Comment;
+import com.social.socialapp.entities.User;
+import com.social.socialapp.exceptions.CommentException;
+import com.social.socialapp.exceptions.PostException;
+import com.social.socialapp.exceptions.StoryException;
+import com.social.socialapp.exceptions.UserException;
+import com.social.socialapp.service.Interface.CommentService;
+import com.social.socialapp.service.Interface.UserService;
+
+@RestController
+@CrossOrigin(origins = "*", allowedHeaders = "*", exposedHeaders = "*")
+@RequestMapping("/api/comments")
+public class CommentController {
+
+	@Autowired
+	private CommentService commentService;
+	
+	@Autowired
+	private UserService userService;
+	
+	@PostMapping("/create/{postId}")
+	public ResponseEntity<CommentDto> createCommentHandler(@RequestBody Comment comment, 
+			@RequestHeader(SecurityConstant.JWT_TOKEN_HEADER) String token,
+			@PathVariable("postId") Integer postId) throws UserException, PostException{
+		
+		User user = userService.findUserProfile(token);
+		
+		CommentDto createdComment = commentService.createComment(user.getId(), postId, comment);
+		
+		return ResponseEntity.ok(createdComment);
+	}
+	
+	@GetMapping("/{commentId}")
+	public ResponseEntity<CommentDto> findCommentByIdHandler(@PathVariable("commentId") Integer commentId) throws UserException, CommentException{
+			
+		CommentDto comment = commentService.findCommentDtoById(commentId);
+		
+		return ResponseEntity.ok(comment);
+		
+	} 
+	
+	@GetMapping("/all/{postId}")
+	public ResponseEntity<List<CommentDto>> findAllCommentsByPostIdHandler(@PathVariable("postId") Integer postId) throws CommentException, PostException{
+			
+		List<CommentDto> comments = commentService.findAllCommentDtoByPostId(postId);
+		
+		return ResponseEntity.ok(comments);
+		
+	} 
+	
+	@PutMapping("/like/{commentId}")
+	public ResponseEntity<CommentDto> likeCommentHandler(
+			@RequestHeader(SecurityConstant.JWT_TOKEN_HEADER) String token,
+			@PathVariable("commentId") Integer commentId) throws UserException, CommentException{
+		
+		User user = userService.findUserProfile(token);
+		
+		CommentDto likedComment = commentService.likeComment(user.getId(), commentId);
+		
+		return ResponseEntity.ok(likedComment);
+	}
+	
+	@PutMapping("/unlike/{commentId}")
+	public ResponseEntity<CommentDto> unlikeCommentHandler(
+			@RequestHeader(SecurityConstant.JWT_TOKEN_HEADER) String token,
+			@PathVariable("commentId") Integer commentId) throws UserException, CommentException{
+		
+		User user = userService.findUserProfile(token);
+		
+		CommentDto unlikedComment = commentService.unlikeComment(user.getId(), commentId);
+		
+		return ResponseEntity.ok(unlikedComment);
+	}
+}
+
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,141 @@
+package com.social.socialapp.service.Implementation;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.social.socialapp.constant.ExceptionConstant;
+import com.social.socialapp.constant.SecurityConstant;
+import com.social.socialapp.dto.StoryDto;
+import com.social.socialapp.dto.UserDto;
+import com.social.socialapp.entities.Story;
+import com.social.socialapp.entities.User;
+import com.social.socialapp.exceptions.StoryException;
+import com.social.socialapp.exceptions.UserException;
+import com.social.socialapp.repository.StoryRepository;
+import com.social.socialapp.service.Interface.StoryService;
+import com.social.socialapp.service.Interface.UserService;
+
+@Service
+public class StoryServiceImpl implements StoryService {
+
+	@Autowired
+	private StoryRepository storyRepository;
+	
+	@Autowired
+	private UserService userService;
+	
+
+	@Override
+	public StoryDto mapStoryToStoryDto(Story story) {
+		
+		StoryDto storyDto = new StoryDto();
+		
+		storyDto.setId(story.getId());
+		storyDto.setStoryImage(story.getStoryImage());
+		storyDto.setCaption(story.getCaption());
+		storyDto.setTimestamp(story.getTimestamp());
+		
+		return null;
+	}
+
+
+	@Override
+	public List<StoryDto> mapStoriesToStoryDtos(List<Story> stories) {
+		return stories.stream()
+                .map(this::mapStoryToStoryDto)
+                .collect(Collectors.toList());
+	}
+
+
+	@Override
+	public Story saveRepoStory(Story story) throws StoryException {
+
+		return storyRepository.save(story);
+	}
+
+
+	
+	@Override
+	public StoryDto createStory(Story story, Integer userId) throws UserException {
+		
+		User user = userService.findUserById(userId);
+		
+		UserDto userDto = userService.mapUserToUserDto(user);
+		
+		// add timestamp
+		story.setTimestamp(LocalDateTime.now());
+		
+		user.getStories().add(story);
+		userService.saveRepoUser(user);
+//		userRepository.save(user);
+
+		storyRepository.save(story);
+		
+		StoryDto storyDto = this.mapStoryToStoryDto(story);
+		
+		storyDto.setUser(userDto);
+//		storyDto.setLikedByUsers(userService.mapUsersToUserDtos(story.getLikedByUsers().stream().collect(Collectors.toList())));
+		
+		
+		return storyDto;
+	}
+
+	@Override
+	public List<Story> findStoryByUserId(Integer userId) throws UserException, StoryException {
+		
+		User user = userService.findUserById(userId);
+		
+		List<Story> stories = storyRepository.findAllStoriesByUserId(user.getId());
+
+		
+		return stories;
+	}
+
+	@Override
+	public Story findStoryById(Integer storyId) throws StoryException {
+		
+		Optional<Story> story = storyRepository.findById(storyId);
+		
+		if(story.isEmpty()) {
+			throw new StoryException();
+		}
+		
+		return story.get();
+	}
+
+	@Override
+	public String deleteStory(Integer storyId, Integer userId) throws UserException, StoryException {
+		
+		Story story = this.findStoryById(storyId);
+		
+		User user = userService.findUserById(userId);
+		
+		if(!story.getUser().getId().equals(user.getId())) {
+			throw new StoryException(ExceptionConstant.UNAUTHORIZED_MESSAGE);
+		}
+		
+		storyRepository.deleteById(story.getId());
+		
+		user.getStories().remove(story);
+		
+		userService.saveRepoUser(user);
+		
+		
+		return "Story deleted successfully";
+	}
+
+
+
+
+
+
+
+
+
+
+}

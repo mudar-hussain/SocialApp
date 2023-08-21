@@ -1,0 +1,5 @@
+package com.social.socialapp.config;
+
+public class CorsConfig {
+
+}

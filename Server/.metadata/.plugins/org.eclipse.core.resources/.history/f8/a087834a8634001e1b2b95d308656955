@@ -1,0 +1,22 @@
+package com.social.socialapp.service.Interface;
+
+import com.social.socialapp.entities.Comment;
+import com.social.socialapp.exceptions.CommentException;
+import com.social.socialapp.exceptions.PostException;
+import com.social.socialapp.exceptions.UserException;
+
+public interface CommentService {
+
+	
+	public Comment saveRepoComment(Comment comment) throws CommentException;
+	
+	public Comment createComment(Integer userId, Integer postId, Comment comment) throws UserException, PostException;
+	
+	public Comment findCommentById(Integer commentId) throws CommentException;
+
+	public Comment likeComment(Integer userId, Integer commentId) throws UserException, CommentException;
+
+	public Comment unlikeComment(Integer userId, Integer commentId) throws UserException, CommentException;
+	
+	
+}

@@ -1,0 +1,89 @@
+package com.social.socialapp.filter;
+
+import java.io.IOException;
+import java.util.List;
+
+import javax.crypto.SecretKey;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.AuthorityUtils;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
+import org.springframework.web.filter.OncePerRequestFilter;
+
+import com.social.socialapp.constant.SecurityConstant;
+import com.social.socialapp.security.JwtTokenUtil;
+
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.security.Keys;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
+public class JwtTokenValidationFilter extends OncePerRequestFilter {
+	
+	@Autowired
+	private JwtTokenUtil jwtTokenUtil;
+
+	@Autowired
+	private UserDetailsService userDetailsService;
+
+	@Override
+	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+			throws ServletException, IOException {
+
+		// 1. Read token from Authorization header
+		String token = request.getHeader(SecurityConstant.JWT_TOKEN_HEADER);
+		
+		if(token != null) {
+			try {
+				token = token.substring(7);
+
+				//2. Do validation
+				String username = jwtTokenUtil.getUsernameFromToken(token);
+				
+				//username should not be empty and context-auth must be empty
+				if(username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+					
+					//3. Database user details
+					UserDetails usr = userDetailsService.loadUserByUsername(username);
+					
+					//validate token
+					boolean isValid = jwtTokenUtil.validateToken(token, usr);
+
+					//if valid then generate security context
+					if(isValid) {
+						//create auth token
+						UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = 
+								new UsernamePasswordAuthenticationToken(username, usr.getPassword(),usr.getAuthorities());
+						
+						
+						usernamePasswordAuthenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+						
+						//final object stored in security context with user details(username, password)
+						SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
+					}
+					
+				}
+				
+			} catch (Exception e) {
+				throw new BadCredentialsException("Invalid Credentials");
+			}
+		}
+		filterChain.doFilter(request, response);
+		
+	}
+	
+	protected boolean shouldNotFilter(HttpServletRequest req) throws ServletException{
+		return req.getServletPath().equals("/signin");
+	}
+
+}

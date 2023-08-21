@@ -1,0 +1,69 @@
+package com.social.socialapp.entities;
+
+import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
+
+import com.social.socialapp.dto.UserDto;
+
+import jakarta.persistence.AttributeOverride;
+import jakarta.persistence.AttributeOverrides;
+import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
+import jakarta.persistence.Embedded;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+@Entity
+@Table(name="Comments")
+@AllArgsConstructor
+@NoArgsConstructor
+@Getter
+@Setter
+public class Comment {
+
+	@Id
+	@GeneratedValue(strategy = GenerationType.AUTO)
+	private Integer id;
+	
+	private String content;
+	private LocalDateTime createdAt;
+	
+
+
+//	@Embedded
+//	@AttributeOverrides(value = { 
+//			@AttributeOverride(name="id", column=@Column(name="user_id")), 
+//			@AttributeOverride(name="email", column=@Column(name="user_email"))
+//	})
+//	private UserDto user;
+	
+	@ManyToOne
+	@JoinColumn(name="user_id")
+	private UserDto user;
+	
+	
+//	@Embedded
+//	@ElementCollection(fetch = FetchType.LAZY)
+//	@JoinTable(name="likedByUsers", joinColumns=@JoinColumn(name="user_id"))
+//	private Set<UserDto> likedByUsers = new HashSet<>();
+	
+	@ManyToMany
+	@JoinTable(name="comment_likes",
+			joinColumns = @JoinColumn(name = "comment_id"),
+			inverseJoinColumns = @JoinColumn(name = "user_id"))
+	private Set<UserDto> likedByUsers = new HashSet<>();
+	
+}

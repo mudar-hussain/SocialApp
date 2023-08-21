@@ -1,0 +1,108 @@
+package com.social.socialapp.controller;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.social.socialapp.constant.SecurityConstant;
+import com.social.socialapp.entities.Comment;
+import com.social.socialapp.entities.User;
+import com.social.socialapp.exceptions.CommentException;
+import com.social.socialapp.exceptions.PostException;
+import com.social.socialapp.exceptions.UserException;
+import com.social.socialapp.service.Interface.CommentService;
+import com.social.socialapp.service.Interface.UserService;
+
+@RestController
+@RequestMapping("/api/comments")
+public class CommentController {
+
+	@Autowired
+	private CommentService commentService;
+	
+	@Autowired
+	private UserService userService;
+	
+	@PostMapping("/create/{postId}")
+	public ResponseEntity<Comment> createCommentHandler(@RequestBody Comment comment, 
+			@RequestHeader(SecurityConstant.JWT_TOKEN_HEADER) String token,
+			@PathVariable("postId") Integer postId) throws UserException, PostException{
+		
+		User user = userService.findUserProfile(token);
+		
+		Comment createdComment = commentService.createComment(user.getId(), postId, comment);
+		
+		return ResponseEntity.ok(createdComment);
+	}
+	
+	@PostMapping("/like/{commentId}")
+	public ResponseEntity<Comment> likeCommentHandler(
+			@RequestHeader(SecurityConstant.JWT_TOKEN_HEADER) String token,
+			@PathVariable("commentId") Integer commentId) throws UserException, CommentException{
+		
+		User user = userService.findUserProfile(token);
+		
+		Comment likedComment = commentService.likeComment(user.getId(), commentId);
+		
+		return ResponseEntity.ok(likedComment);
+	}
+}
+
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
