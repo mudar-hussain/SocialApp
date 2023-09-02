@@ -1,0 +1,252 @@
+{
+	"info": {
+		"_postman_id": "521b64dd-1552-4db2-9f94-ee59bd35e3fb",
+		"name": "SocialApp Backend API",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "registerUserHandler",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"username\":\"zahabiya\",\r\n    \"password\":\"zahabiya\",\r\n    \"email\":\"zahabiya@gmail.com\",\r\n    \"name\":\"zahabiya\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:5253/signup",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5253",
+					"path": [
+						"signup"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "findUserByIdHandler",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzUxMiJ9.eyJpc3MiOiJTb2NpYWxBcHAiLCJpYXQiOjE2ODkwNTYxNDAsImV4cCI6MTY4OTM1NjE0MCwiYXV0aG9yaXRpZXMiOiIiLCJ1c2VybmFtZSI6InphaGFiaXlhQGdtYWlsLmNvbSJ9.75V9ljXqYyBukWO2l0XbMwvUkqhJNPFs6S4l4Td8vNzPOc0yphnV8YrYLGDeXKCbWwUq-JpdJOeIW8VVW0-ZLg",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:5253/api/users/id/152",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5253",
+					"path": [
+						"api",
+						"users",
+						"id",
+						"152"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "findUserByUsernameHandler",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:5253/api/users/username/mudar",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5253",
+					"path": [
+						"api",
+						"users",
+						"username",
+						"mudar"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "New Request",
+			"request": {
+				"auth": {
+					"type": "bearer"
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:5253/api/users/ids/1,2,3",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5253",
+					"path": [
+						"api",
+						"users",
+						"ids",
+						"1,2,3"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "searchUserHandler",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:5253/api/users/search?q=f",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5253",
+					"path": [
+						"api",
+						"users",
+						"search"
+					],
+					"query": [
+						{
+							"key": "q",
+							"value": "f"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "signin",
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "zahabiya",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "zahabiya@gmail.com",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:5253/signin",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5253",
+					"path": [
+						"signin"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create New Post",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzUxMiJ9.eyJpc3MiOiJTb2NpYWxBcHAiLCJpYXQiOjE2ODk0MDQ3OTEsImV4cCI6MTY4OTQyMjc5MSwiYXV0aG9yaXRpZXMiOiIiLCJ1c2VybmFtZSI6InphaGFiaXlhQGdtYWlsLmNvbSJ9.DoUSW1xataV1S1VjuRjW_VK-bakBGwyxEHmEggScul7-bNVB6UWo2jTxDadMFw2-zl4cYDltysnk_RCRotjV8A",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"caption\": \"Test1\",\r\n    \"image\": \"https://wordadsmediafiles.files.wordpress.com/2023/06/2023_06_tumblr_gs_meme20_largetext_1x_250x250.png\",\r\n    \"location\": \"Murtizapur\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:5253/api/posts/create",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5253",
+					"path": [
+						"api",
+						"posts",
+						"create"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"auth": {
+		"type": "apikey"
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	]
+}
