@@ -1,0 +1,20 @@
+.mobilewallpaper{
+    background-image: url("https://res.cloudinary.com/dxznczbur/image/upload/v1691598667/SocialApp/img/SCREEN1_AUTH.png");
+    animation: changeBg 8s infinite;
+}
+
+
+@keyframes changeBg {
+    0%{
+        background-image: url("https://res.cloudinary.com/dxznczbur/image/upload/v1691598667/SocialApp/img/SCREEN1_AUTH.png");
+    }
+    25%{
+        background-image: url("https://res.cloudinary.com/dxznczbur/image/upload/v1691598666/SocialApp/img/SCREEN2_AUTH.png");
+    }
+    50%{
+        background-image: url("https://res.cloudinary.com/dxznczbur/image/upload/v1691598666/SocialApp/img/SCREEN3_AUTH.png");
+    }
+    75%{
+        background-image: url("https://res.cloudinary.com/dxznczbur/image/upload/v1691598667/SocialApp/img/SCREEN4_AUTH.png");
+    }
+}
